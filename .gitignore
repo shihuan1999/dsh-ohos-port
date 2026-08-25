@@ -1,0 +1,7 @@
+# 大文件产物不入库（校验和见 SHA256SUMS.artifacts，重建方法见 README 第二章）
+*.tar.gz
+node-dynamic-riscv64
+node-intl
+# 本机临时物
+*.log
+.DS_Store
