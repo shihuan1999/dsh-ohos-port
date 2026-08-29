@@ -312,3 +312,16 @@ mkdir -p node_modules/@deepseek-ai/node-addon-landlock-run-linux-riscv64/bin
 ## 五、产物校验和
 
 见 `SHA256SUMS.artifacts`（含未入库大产物与入库脚本/桩/证据的 SHA256）。产物丢失时按第二章流程在 snode7 重建。
+
+## 〇、从 GitHub Release 一键安装（设备联网时，推荐）
+
+```sh
+# 设备上直接执行（需 root，/bin/curl 已随系统镜像提供）：
+/bin/curl -fLO https://github.com/shihuan1999/dsh-ohos-port/releases/download/v1.0.0/install-on-device.sh
+sh install-on-device.sh v1.0.0
+sh /data/dsh/bin/dsh-start.sh      # 起 mock LLM :8000 + web :3180
+```
+
+Release 资产：`dsh-riscv64.tar.gz`、`node-intl`、`libs-landlock.tar.gz`、
+`native-extra.tar.gz`、三个启动脚本；校验和见 `SHA256SUMS.artifacts`。
+不联网时沿用下述 hdc file send 流程。
