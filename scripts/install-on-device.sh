@@ -11,6 +11,13 @@ TAG="${1:-v1.0.0}"
 BASE="https://github.com/shihuan1999/dsh-ohos-port/releases/download/$TAG"
 PKG=/data/dsh/pkg
 
+# System curl on OHOS ships without a CA bundle; borrow one when present.
+if ! /bin/curl -sI --max-time 8 https://github.com >/dev/null 2>&1; then
+  for ca in /system/etc/ssl/cacert.pem /data/homebrew/etc/ssl/cacert.pem; do
+    if [ -f "$ca" ]; then export CURL_CA_BUNDLE="$ca"; break; fi
+  done
+fi
+
 mkdir -p /data/dsh/bin /data/dsh/lib /data/dsh/home /data/dsh/tmp "$PKG"
 cd "$PKG"
 
