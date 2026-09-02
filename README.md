@@ -325,3 +325,47 @@ sh /data/dsh/bin/dsh-start.sh      # 起 mock LLM :8000 + web :3180
 Release 资产：`dsh-riscv64.tar.gz`、`node-intl`、`libs-landlock.tar.gz`、
 `native-extra.tar.gz`、三个启动脚本；校验和见 `SHA256SUMS.artifacts`。
 不联网时沿用下述 hdc file send 流程。
+
+---
+
+## 2026-09-02 brew 集成（独立包 + 插件支持）
+
+本仓已纳入统一移植规范（原始代码 + riscv 补丁 + 说明），见
+[tap 仓 OHOS-PORTS.md](https://github.com/shihuan1999/homebrew-riscv/blob/main/OHOS-PORTS.md)。
+
+### 独立安装（Harmonybrew）
+
+```bash
+. /data/harmonybrew/hbrew-env.sh
+brew install hbrew/riscv/dsh          # 依赖 hbrew/riscv/node（trapfix riscv64 v22.16.0）
+dsh --version                         # 0.1.0-rc.7
+```
+
+瓶（`dsh-v0.1.0-rc.7-ohos` Release）：完整 `node_modules` 闭包 + 交叉编译原生件
+（pty.node / koffi / landlock / sharp 桩）+ 工具链运行库（libstdc++ 等），
+**不再内嵌 node**，运行时用 node 包（与本仓原 node-intl 同源补丁集：
+SV39 掩码修复 + wasm trap-handler 关闭，见 shihuan1999/node riscv64-ohos 分支）。
+
+状态目录默认 `$(brew --prefix dsh)/home`；复用历史部署：
+`export DSH_HOME=/data/dsh/home`。
+
+### 插件安装支持（`dsh plugin` → pnpm）
+
+`dsh plugin <args...>` 把剩余参数转发给 profile 目录下的 **pnpm**。链路：
+
+```bash
+brew install hbrew/riscv/node         # 22.16.0，含 npm/corepack
+corepack enable
+corepack prepare pnpm@latest --activate
+dsh plugin add <pkg>                  # 设备公网直装（2026-09-02 实测）
+dsh plugin list
+```
+
+设备端 npm registry 走公网（配 `HOME` 可写目录）；若网络受限，可在 PC 侧
+`pnpm pack` 后把 tgz 放设备本地路径安装：`dsh plugin add /data/tmp/<pkg>.tgz`。
+
+### 已知坑（沿用）
+
+- node 必须用 trapfix 版（多 wasm 实例 / SV39 VA 限制，见 node 移植分支）；
+- `V8 intl` 缺失会导致会话归档路径崩溃——node 包已带 small-icu；
+- sharp 原生依赖以 Proxy 桩替代（`patches/dsh-attachment-local.index.js`）。
